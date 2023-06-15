@@ -1,62 +1,43 @@
 import pygame
-from game.components.enemies.enemy_2 import Enemy_2
-from game.components.enemies.enemy_manager import EnemyManager
+from pygame.sprite import Sprite
+from game.utils.constants import SCREEN_HEIGHT, SPACESHIP
+from game.utils.constants import SCREEN_WIDTH
 
 
-from game.components.spaceship import Spaceship
-
-from game.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, DEFAULT_TYPE
-
-
-class Game:
+class Spaceship(Sprite):
     def __init__(self):
-        pygame.init()
-        pygame.display.set_caption(TITLE)
-        pygame.display.set_icon(ICON)
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.clock = pygame.time.Clock()
-        self.playing = False
-        self.game_speed = 10
-        self.x_pos_bg = 0
-        self.y_pos_bg = 0
-        self.player = Spaceship()
-        self.enemy_manager = EnemyManager()
+        self.image = pygame.transform.scale(SPACESHIP, (60, 40))
+        self.rect = self.image.get_rect()
+        self.rect.x = 520
+        self.rect.y = 500
 
-    def run(self):
-        # Game loop: events - update - draw
-        self.playing = True
-        while self.playing:
-            self.events()
-            self.update()
-            self.draw()
-        pygame.display.quit()
-        pygame.quit()
+    def update(self, user_input):
+        if user_input[pygame.K_LEFT]:
+            self.move_left()
+        elif user_input[pygame.K_RIGHT]:
+            self.move_right()
+        elif user_input[pygame.K_UP]:
+            self.move_up()
+        elif user_input[pygame.K_DOWN]:
+            self.move_down()
+    
+    def move_left(self):
+        self.rect.x -= 10
+        if self.rect.left <= -50:
+            self.rect.x = SCREEN_WIDTH
 
-    def events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.playing = False
+    def move_right(self):
+        self.rect.x += 10
+        if self.rect.right >= (SCREEN_WIDTH) + 50:
+            self.rect.x = -50
 
-    def update(self):
-        user_input = pygame.key.get_pressed()
-        self.player.update(user_input) 
-        self.enemy_manager.update()
+    def move_up(self):
+        if self.rect.y > SCREEN_HEIGHT // 2:
+            self.rect.y -= 10
+         
+    def move_down(self):
+        if self.rect.y < SCREEN_HEIGHT - 50:
+            self.rect.y += 10
 
-    def draw(self):
-        self.clock.tick(FPS)
-        self.screen.fill((255, 255, 255))
-        self.draw_background()
-        self.player.draw(self.screen)
-        self.enemy_manager.draw(self.screen)
-        pygame.display.update()
-        pygame.display.flip()
-
-    def draw_background(self):
-        image = pygame.transform.scale(BG, (SCREEN_WIDTH, SCREEN_HEIGHT))
-        image_height = image.get_height()
-        self.screen.blit(image, (self.x_pos_bg, self.y_pos_bg))
-        self.screen.blit(image, (self.x_pos_bg, self.y_pos_bg - image_height))
-        if self.y_pos_bg >= SCREEN_HEIGHT:
-            self.screen.blit(image, (self.x_pos_bg, self.y_pos_bg - image_height))
-            self.y_pos_bg = 0
-        self.y_pos_bg += self.game_speed
+    def draw(self, screen):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
